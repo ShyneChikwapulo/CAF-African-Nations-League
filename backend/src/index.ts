@@ -10,7 +10,15 @@ import seedRoutes from './routes/seed';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://your-frontend-url.onrender.com' // We'll update this after deployment
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use('/api/seed', seedRoutes);
 
