@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://your-frontend-url.onrender.com' // We'll update this after deployment
+    'https://caf-african-nations-league-frontend.onrender.com' // We'll update this after deployment
   ],
   credentials: true
 }));
