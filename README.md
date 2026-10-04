@@ -1,339 +1,107 @@
-# African Nations League - Complete Guide
+# African Nations League
 
-## 🌍 Overview
+A full-stack football tournament simulator. Federation representatives register teams, an admin builds an eight-team knockout bracket, and each match can be simulated quickly or played with AI-generated commentary.
 
-The African Nations League is a football tournament simulation platform where you can register teams, simulate matches with AI commentary, track tournament progress, and view detailed statistics.
+Solo project, built for the UCT Honours (Information Systems) entrance assessment.
+<!-- CONFIRM: wording of the UCT line, and whether a live URL exists. -->
 
----
+<!-- Screenshots: add to docs/screenshots/ and uncomment
+![Home](docs/screenshots/home.png)
+![Bracket](docs/screenshots/bracket.png)
+![Match](docs/screenshots/match.png)
+-->
 
-## 💻 Local Development Setup (VS Code)
+## Features
 
-### Prerequisites
-- Node.js (v18 or higher)
-- VS Code
-- Git
-- Firebase project
+- **Team registration:** a representative registers a country and receives a generated 23-player squad (3 GK, 8 DF, 8 MD, 4 AT) with randomised ratings and a team average.
+- **Demo teams:** the admin can seed seven extra teams (Nigeria, Egypt, Senegal, Morocco, Ghana, Ivory Coast, Cameroon).
+- **Tournament:** an 8-team bracket with quarter-finals, semi-finals and a final. Winners advance automatically.
+- **Two ways to play a match:** a quick rating-weighted simulation, or a played match where an LLM (GPT-4o via OpenRouter) writes commentary for the generated events, with a fallback if the call fails.
+- Match detail pages, a goal-scorer leaderboard and a winner screen.
+- Result emails to both teams (Nodemailer).
+- JWT authentication with bcrypt-hashed passwords.
 
-### Step 1: Clone and Setup
+## Tech stack
+
+| Area | Technology |
+|---|---|
+| Frontend | React 19, TypeScript, Tailwind CSS |
+| Backend | Node.js, Express, TypeScript |
+| Database | Firebase Firestore (firebase-admin) |
+| Auth | JWT, bcryptjs |
+| Email | Nodemailer |
+| AI | OpenRouter (`openai/gpt-4o`) |
+
+## Repository layout
+
+```text
+backend/    Express API (src/routes, services, middleware, config, scripts)
+frontend/   React app
+```
+
+## Getting started
+
+**Prerequisites:** Node.js 18+, a Firebase project with Firestore, an OpenRouter API key, and a Gmail app password if you want email.
 
 ```bash
-# Clone the repository
-git clone <your-repository-url>
-cd african-nations-league
+git clone https://github.com/ShyneChikwapulo/CAF-African-Nations-League.git
+cd CAF-African-Nations-League
 
-# Install backend dependencies
+# Backend
 cd backend
-npm install
-
-# Install frontend dependencies
-cd ../frontend
 npm install
 ```
 
-### Step 2: Environment Setup
+Create `backend/.env`:
 
-**Backend Setup:**
-1. Create `backend/.env` file:
 ```env
 PORT=5000
-FIREBASE_SERVICE_ACCOUNT={"type": "service_account", "project_id": "your-project-id", ...}
-OPENAI_API_KEY=your-openai-api-key
+JWT_SECRET=<long-random-string>
+OPENROUTER_API_KEY=<your-key>
 EMAIL_SERVICE=gmail
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-JWT_SECRET=your-jwt-secret
+EMAIL_USER=<your-email>
+EMAIL_PASS=<app-password>
+# Optional: instead of backend/serviceAccountKey.json
+FIREBASE_SERVICE_ACCOUNT={...service account JSON on one line...}
 ```
 
-2. Add Firebase service account key:
-   - Download from Firebase Console → Project Settings → Service Accounts
-   - Save as `backend/serviceAccountKey.json`
+In development the backend reads `backend/serviceAccountKey.json` first (download it from Firebase Console > Project Settings > Service Accounts; never commit it) and falls back to `FIREBASE_SERVICE_ACCOUNT`.
 
-**Frontend Setup:**
-1. Create `frontend/.env` file:
-```env
-REACT_APP_API_URL=http://localhost:5000/api
-```
-
-### Step 3: Run the Application
-
-**Option A: Separate Terminals (Recommended)**
 ```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
+npx ts-node src/scripts/createAdmin.ts   # creates the admin user (see the note below)
+npm run dev                              # API on http://localhost:5000, health check at /api/health
+```
 
-# Terminal 2 - Frontend  
+In a second terminal:
+
+```bash
 cd frontend
-npm start
+npm install
+echo "REACT_APP_API_URL=http://localhost:5000/api" > .env
+npm start                                # http://localhost:3000
 ```
 
-**Option B: VS Code Integrated Terminal**
-1. Open VS Code
-2. Open two terminals:
-   - Terminal 1: `cd backend && npm run dev`
-   - Terminal 2: `cd frontend && npm start`
-3. Both servers will start automatically
+> **Note:** the admin script currently has the admin email and password hard-coded. Change them before using this anywhere public.
 
-### Step 4: Verify Setup
-- **Backend:** http://localhost:5000/api/health
-- **Frontend:** http://localhost:3000
+## Usage
 
-### VS Code Extensions (Recommended)
-- ES7+ React/Redux/React-Native snippets
-- Auto Rename Tag
-- Bracket Pair Colorizer
-- Thunder Client (for API testing)
+1. Register a team (choose a country).
+2. Sign in as the admin and open the Admin Panel.
+3. Click **Seed Demo Data** to add seven teams.
+4. Select eight teams and click **Create Tournament**.
+5. Play each match with **Simulate Match** or **Play Match with AI**.
 
----
+## Testing
 
-## 🚀 Quick Start Guide
+The frontend contains only the default Create React App test. There is no backend test suite yet.
 
-### Step 1: Access the Application
-- **Local:** Open http://localhost:3000
-- **Production:** Open your deployed application URL
-- You'll land on the home page showing tournament information
+## Roadmap
 
-### Step 2: Register Your Team
-1. **Click "Register Team"** in the navigation menu
-2. **Fill in the registration form:**
-   - **Email:** Your email address
-   - **Country:** Select **South Africa** (recommended for demo)
-   - **Manager Name:** Enter your name or any manager name
-3. **Click "Continue to Team Setup"**
-4. **Review your details** and click **"Complete Registration & Generate Team"**
+- Protect the tournament, match-play and seed endpoints with authentication and admin checks
+- Read admin credentials from environment variables and remove the debug route
+- Visual redesign of the UI
+- Backend tests for bracket progression and match logic
 
-✅ **Your team will be automatically created with:**
-- 23 players (3 GK, 8 DF, 8 MD, 4 AT)
-- Randomly generated player ratings
-- Team average rating calculated automatically
+## Author
 
-### Step 3: Login as Admin
-**Default Admin Credentials:**
-```
-Email: admin@africanleague.com
-Password: admin123
-```
-
-1. **Log out** of your representative account
-2. **Log in as Admin** using the credentials above
-3. **Navigate to the Admin Panel**
-
-### Step 4: Generate Demo Teams
-1. **In the Admin Panel**, click the **"Seed Demo Data"** button
-2. **Wait for confirmation** - 7 additional teams will be created automatically:
-   - Nigeria, Egypt, Senegal, Morocco, Ghana, Ivory Coast, Cameroon
-
-### Step 5: Create Tournament
-1. **In the Admin Panel**, select **8 teams** for the tournament
-2. **Click "Create Tournament"** to generate the tournament bracket
-
-### Step 6: Play Matches
-1. **In the Admin Panel**, you'll see all tournament matches
-2. **For each match, you can:**
-   - **"Play Match with AI"** - Generates realistic commentary and detailed match analysis
-   - **"Simulate Match"** - Quick simulation without commentary
-
----
-
-## 🏆 Key Features
-
-### Tournament Bracket
-- **View:** Navigate to "Tournament" page
-- **Features:**
-  - Visual bracket with team flags
-  - Match scores and results
-  - Click any match for detailed view
-  - Trophy display for the champion
-
-### Match Details
-- **AI Played Matches:** Full commentary, goal scorers, match events
-- **Simulated Matches:** Basic scoreline and goal information
-- **Email Notifications:** Both teams receive match result emails
-
-### Goal Scorers Leaderboard
-- **View:** On the Tournament page
-- **Shows:** Top goal scorers across the entire tournament
-- **Includes:** Player name, team, and goal count
-
-### Team Dashboard
-- **Access:** Login as team representative and go to "Team Dashboard"
-- **Features:**
-  - Team profile and statistics
-  - Complete squad list with player ratings
-  - Upcoming matches
-  - Match history with results
-  - Performance analytics
-
----
-
-## 👥 User Roles
-
-### Federation Representative
-- **Register and manage** their national team
-- **View** team dashboard with detailed analytics
-- **Receive** email notifications for match results
-- **Monitor** player statistics and team performance
-
-### Administrator
-- **Create and manage** tournaments
-- **Play or simulate** matches
-- **Generate** demo data
-- **Reset** tournaments
-- **Access** all system features
-
-### Visitor (Public)
-- **View** tournament bracket
-- **See** match summaries
-- **Check** goal scorers leaderboard
-- **Browse** team information
-
----
-
-## 🎮 How to Run a Complete Tournament
-
-### Phase 1: Setup
-1. Register at least 8 teams (use Seed Data for quick setup)
-2. Create tournament in Admin Panel
-3. Verify bracket appears on Tournament page
-
-### Phase 2: Quarter-Finals
-1. Go to Admin Panel → Match Management
-2. Play/SIM each quarter-final match
-3. Check bracket updates automatically
-
-### Phase 3: Semi-Finals
-1. Winners automatically advance to semi-finals
-2. Play/SIM semi-final matches
-3. Bracket updates with advancing teams
-
-### Phase 4: Final
-1. Play the championship match
-2. Winner is crowned champion
-3. Trophy appears on bracket
-
----
-
-## 📊 Understanding the System
-
-### Player Ratings
-- **Natural Position:** 50-100 rating
-- **Other Positions:** 0-50 rating
-- **Team Rating:** Average of natural position ratings
-
-### Match Simulation
-- **AI Played:** Full commentary, realistic match flow, detailed events
-- **Simulated:** Basic result calculation, no commentary
-- **Scoring:** Based on team ratings with randomness factor
-
-### Email System
-- **Automatic notifications** sent after each match
-- **Includes:** Final score, result, goal scorers
-- **Sent to:** Both team representatives
-
----
-
-## 🔧 Troubleshooting
-
-### Development Issues
-
-**Backend won't start:**
-- Check if port 5000 is available
-- Verify all environment variables are set
-- Ensure Firebase service account key exists
-
-**Frontend build errors:**
-- Clear node_modules: `rm -rf node_modules && npm install`
-- Check Node.js version compatibility
-
-**Database connection issues:**
-- Verify Firebase project is set up
-- Check service account permissions
-
-### Common Application Issues
-
-**"No Active Tournament" Message**
-- Solution: Ensure 8 teams are registered and tournament is created in Admin Panel
-
-**Goal Scorers Leaderboard Empty**
-- Solution: Play some matches first - goals are only tracked after matches are completed
-
-**AI Commentary Not Generating**
-- Solution: Check OpenAI API key and credits
-
-**Team Not Appearing in Dashboard**
-- Solution: Log out and log back in, or check if team was properly registered
-
-**Match Won't Play**
-- Solution: Ensure tournament is active and match hasn't already been completed
-
----
-
-## 💡 Pro Tips
-
-### Development Tips
-1. **Use VS Code debugger** for backend debugging
-2. **Check browser console** for frontend errors
-3. **Use Thunder Client** to test API endpoints
-4. **Monitor Firebase console** for database operations
-
-### Application Tips
-1. **For Best Demo:** Always start by registering South Africa, then use Seed Data
-2. **AI Matches:** Provide the most engaging experience with full commentary
-3. **Quick Testing:** Use "Simulate Match" for faster tournament progression
-4. **Data Persistence:** All data is saved in the database between sessions
-5. **Mobile Friendly:** The app works great on mobile devices too
-
----
-
-## 📱 Supported Browsers
-
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
-- Mobile browsers
-
----
-
-## 🆘 Getting Help
-
-### Development Support
-- Check console logs for detailed error messages
-- Verify all environment variables are set
-- Ensure Firebase project is properly configured
-
-### Application Support
-If you encounter any issues:
-1. Check this guide first
-2. Ensure you're following the step-by-step process
-3. Use the default admin credentials:
-   ```
-   Email: admin@africanleague.com
-   Password: admin123
-   ```
-4. Verify all environment settings are correct
-
----
-
-## 🚀 Deployment
-
-### Quick Deploy to Render
-1. **Backend:** Create Web Service, connect GitHub, set environment variables
-2. **Frontend:** Create Static Site, connect GitHub, set build commands
-3. **Update CORS** with your production URLs
-
-### Environment Variables for Production
-```
-FIREBASE_SERVICE_ACCOUNT={your-full-json}
-OPENAI_API_KEY=your-key
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-JWT_SECRET=your-secret
-REACT_APP_API_URL=your-backend-url
-```
-
----
-
-**Enjoy developing and managing your African Nations League tournament!** 🌍⚽
-
-*Default Admin Credentials: admin@africanleague.com / admin123*
+Shine Chikwapulo · [GitHub](https://github.com/ShyneChikwapulo) · [LinkedIn](https://www.linkedin.com/in/shine-chikwapulo-741b20265/)
